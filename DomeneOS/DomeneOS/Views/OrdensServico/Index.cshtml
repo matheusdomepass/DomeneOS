@@ -15,7 +15,7 @@
             @TempData["Sucesso"]
         </div>
     }
-    <a asp-action="Criar" class="btn btn-primary mb-3">Nova Ordem de Serviço</a>
+    <a asp-action="Criar" class="btn btn-primary mb-3"><i class="bi bi-plus-circle"></i> Nova Ordem de Serviço</a>
 </div>
 
 <div class="mb-3">
@@ -65,12 +65,13 @@
                 <td>@ordem.DataAbertura.ToString("dd/MM/yyyy")</td>
                 <td>@(ordem.DataFinalizacao.HasValue ? ordem.DataFinalizacao.Value.ToString("dd/MM/yyyy") : "-")</td>
                 <td class="text-center">
-                    <a asp-action="Detalhes" asp-route-id="@ordem.Id" class="btn btn-info btn-sm">Detalhes</a>
-                    <a asp-action="Editar" asp-route-id="@ordem.Id" class="btn btn-warning btn-sm">Editar</a>
+                    <a asp-action="Detalhes" asp-route-id="@ordem.Id" class="btn btn-info btn-sm"><i class="bi bi-eye"></i> Detalhes</a> 
+                    <a asp-action="Editar" asp-route-id="@ordem.Id" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i> Editar</a> 
                     <form asp-action="Excluir" asp-route-id="@ordem.Id" method="post" style="display:inline;">
                         <button type="submit"
                                 class="btn btn-danger btn-sm"
                                 onclick="return confirm('Tem certeza que deseja excluir esta ordem de serviço?');">
+                            <i class="bi bi-trash"></i>
                             Excluir
                         </button>
                     </form>
