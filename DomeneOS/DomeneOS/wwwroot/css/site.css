@@ -67,3 +67,23 @@ body {
 .card-canceladas {
     border-left-color: #EF4444;
 }
+
+.btn-domene-primary {
+    background-color: #2563EB;
+    border-color: #2563EB;
+    color: white;
+}
+
+.btn-domene-primary:hover {
+    background-color: #1D4ED8;
+    border-color: #1D4ED8;
+    color: white;
+}
+
+.btn-domene-secondary {
+    min-width: 110px;
+}
+
+btn-action {
+    min-width: 95px;
+}

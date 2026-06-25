@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 
 namespace DomeneOS.Controllers
 {
@@ -158,6 +161,56 @@ namespace DomeneOS.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> GerarPDF(int id)
+        {
+            var ordem = await _context.OrdensServico.Include(o => o.Cliente).FirstOrDefaultAsync(o => o.Id == id);
+
+            if (ordem == null)
+            {
+                return NotFound();
+            }
+
+            var pdf = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(30);
+                    page.Size(PageSizes.A4);
+
+                    page.Header().Text("DomeneOS - Ordem de Serviço").FontSize(20).Bold();
+
+                    page.Content().Column(col =>
+                    {
+                        col.Spacing(10);
+
+                        col.Item().Text($"OS N°: {ordem.Id}").Bold();
+                        col.Item().Text($"Cliente: {ordem.Cliente.Nome}");
+                        col.Item().Text($"Telefone: {ordem.Cliente.Telefone}");
+                        col.Item().Text($"Email: {ordem.Cliente.Email}");
+                        col.Item().Text($"CPF/CNPJ: {ordem.Cliente.CpfCnpj}");
+
+                        col.Item().LineHorizontal(1);
+
+                        col.Item().Text($"Descrição do Problema: {ordem.DescricaoProblema}");
+                        col.Item().Text($"Diagnóstico: {ordem.Diagnostico ?? "Não informado"}");
+                        col.Item().Text($"Solução: {ordem.Solucao ?? "Não informado"}");
+
+                        col.Item().LineHorizontal(1);
+
+                        col.Item().Text($"Status: {ordem.Status}");
+                        col.Item().Text($"Valor: {ordem.Valor.ToString("C")}");
+                        col.Item().Text($"Data de Abertura: {ordem.DataAbertura:dd/MM/yyyy HH:mm}");
+                        col.Item().Text($"Data de Finalização: {(ordem.DataFinalizacao.HasValue ? ordem.DataFinalizacao.Value.ToString("dd/MM/yyyy") : "Não finalizada")}");
+
+                    });
+
+                    page.Footer().AlignCenter().Text("Documento gerado com sucesso");
+                });
+            }).GeneratePdf();
+
+            return File(pdf, "application/pdf", $"OS-{ordem.Id}.pdf");
         }
     }
 }

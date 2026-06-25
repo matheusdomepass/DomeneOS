@@ -2,6 +2,7 @@ using DomeneOS.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,8 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SupportedCultures = new[] { cultura };
     options.SupportedUICultures = new[] { cultura };
 });
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var app = builder.Build();
 

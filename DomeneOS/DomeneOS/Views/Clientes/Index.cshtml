@@ -15,7 +15,7 @@
             @TempData["Sucesso"]
         </div>
     }
-    <a asp-action="Criar" class="btn btn-primary mb-3">
+    <a asp-action="Criar" class="btn btn-domene-primary">
         <i class="bi bi-plus-circle"></i> Novo Cliente
     </a>
 </div>
@@ -52,10 +52,10 @@
                 <td>@cliente.Email</td>
                 <td>@cliente.CpfCnpj</td>
                 <td>
-                    <a asp-action="Detalhes" asp-route-id="@cliente.Id" class="btn btn-info btn-sm"><i class="bi bi-eye"></i> Detalhes</a> 
-                    <a asp-action="Editar" asp-route-id="@cliente.Id" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i> Editar</a> 
+                    <a asp-action="Detalhes" asp-route-id="@cliente.Id" class="btn btn-info btn-sm btn-action"><i class="bi bi-eye"></i> Detalhes</a> 
+                    <a asp-action="Editar" asp-route-id="@cliente.Id" class="btn btn-warning btn-sm btn-action"><i class="bi bi-pencil-square"></i> Editar</a> 
                     <form asp-action="Excluir" asp-route-id="@cliente.Id" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir esse cliente?');">
+                        <button type="submit" class="btn btn-danger btn-sm btn-action" onclick="return confirm('Tem certeza que deseja excluir esse cliente?');">
                             <i class="bi bi-trash"></i>
                         Excluir
                     </button>
