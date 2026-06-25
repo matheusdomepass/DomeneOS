@@ -1,0 +1,46 @@
+﻿@model DomeneOS.Models.OrdemServico
+@using DomeneOS.Models
+
+<h1 class="mb-4">Detalhes da Ordem de Serviço</h1>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">
+        Dados da Ordem
+    </div>
+
+    <div class="card-body">
+        <p><strong>Cliente:</strong> @Model.Cliente.Nome</p>
+        <p><strong>Descrição:</strong> @Model.DescricaoProblema</p>
+        <p><strong>Diagnóstico:</strong> @(string.IsNullOrWhiteSpace(Model.Diagnostico) ? "Não informado" : Model.Diagnostico)</p>
+        <p><strong>Solução:</strong> @(string.IsNullOrWhiteSpace(Model.Solucao) ? "Não informado" : Model.Solucao)</p>
+        <p><strong>Valor:</strong> @Model.Valor.ToString("C")</p>
+        <p>
+            <strong>Status:</strong>
+            @switch (Model.Status)
+            {
+                case StatusOrdemServico.Aberta:
+                    <span class="badge bg-primary">Aberta</span>
+                    break;
+                case StatusOrdemServico.EmAndamento:
+                    <span class="badge bg-warning text-dark">Em andamento</span>
+                    break;
+                case StatusOrdemServico.Finalizada:
+                    <span class="badge bg-success">Finalizada</span>
+                    break;
+                case StatusOrdemServico.Cancelada:
+                    <span class="badge bg-danger">Cancelada</span>
+                    break;
+            }
+        </p>
+        <p><strong>Abertura:</strong> @Model.DataAbertura.ToString("dd/MM/yyyy")</p>
+        <p><strong>Finalização:</strong>
+            @(Model.DataFinalizacao.HasValue ? Model.DataFinalizacao.Value.ToString("dd/MM/yyyy HH:mm") : "Não finalizada")
+            </p>
+    </div>
+</div>
+
+<div class="d-flex gap-2">
+    <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-warning">Editar</a>
+    <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+</div>
+

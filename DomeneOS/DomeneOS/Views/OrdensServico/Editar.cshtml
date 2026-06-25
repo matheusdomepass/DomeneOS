@@ -1,0 +1,45 @@
+﻿@model DomeneOS.Models.OrdemServico
+
+<h1>Editar Ordem de Serviço</h1>
+<div asp-validation-summary="All" class="text-danger"></div>
+<form asp-action="Editar" asp-route-id="Model.Id" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div class="mb-3">
+        <label asp-for="ClienteId" class="form-label">Cliente</label>
+        <select asp-for="ClienteId" class="form-control" asp-items="ViewBag.Clientes">
+            <option value="">Selecione um cliente</option>
+        </select>
+        <span asp-validation-for="ClienteId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DescricaoProblema" class="form-label">Descrição do Problema</label>
+        <textarea asp-for="DescricaoProblema" class="form-control"></textarea>
+        <span asp-validation-for="DescricaoProblema" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Diagnostico" class="form-label">Diagnóstico</label>
+        <textarea asp-for="Diagnostico" class="form-control"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Solucao" class="form-label">Solução</label>
+        <textarea asp-for="Solucao" class="form-control"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Valor" class="form-label">Valor</label>
+        <input asp-for="Valor" class="form-control" type="text" data-val-number="Digite um valor válido. Ex: 10,50" />
+        <span asp-validation-for="Valor" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Status" class="form-label">Status</label>
+        <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<StatusOrdemServico>()"></select>
+    </div>
+
+    <button type="submit" class="btn btn-success">Salvar</button>
+    <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+</form>
+
