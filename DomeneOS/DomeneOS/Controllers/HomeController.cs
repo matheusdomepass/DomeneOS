@@ -2,9 +2,11 @@
 using DomeneOS.Data;
 using DomeneOS.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DomeneOS.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly BancoContext _context;

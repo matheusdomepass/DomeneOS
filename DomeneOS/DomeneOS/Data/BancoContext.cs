@@ -1,9 +1,10 @@
 ﻿using DomeneOS.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace DomeneOS.Data
 {
-    public class BancoContext : DbContext
+    public class BancoContext : IdentityDbContext
     {
         public  BancoContext(DbContextOptions<BancoContext> options) : base(options)
         {

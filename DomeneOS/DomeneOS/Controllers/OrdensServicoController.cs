@@ -7,9 +7,11 @@ using System.Globalization;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DomeneOS.Controllers
 {
+    [Authorize]
     public class OrdensServicoController : Controller
     {
         private readonly BancoContext _context;

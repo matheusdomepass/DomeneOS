@@ -1,0 +1,57 @@
+﻿@model DomeneOS.ViewModels.RegisterViewModel
+
+@{
+    Layout = "LayoutLogin";
+    ViewData["Title"] = "Cadastro";
+}
+
+<h1 class="mb-4">
+    <i class="bi bi-person-plus"></i>
+    Criar Conta
+</h1>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white">
+        Novo Usuário
+    </div>
+
+    <div class="card-body">
+        <form asp-action="Registrar" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Senha"></label>
+                <input asp-for="Senha" class="form-control" />
+                <span asp-validation-for="Senha" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ConfirmarSenha"></label>
+                <input asp-for="ConfirmarSenha" class="form-control" />
+                <span asp-validation-for="ConfirmarSenha" class="text-danger"></span>
+            </div>
+
+            <button class="btn btn-success">
+                <i class="bi bi-person-plus"></i>
+                Cadastrar
+            </button>
+
+            <a asp-action="Login" class="btn btn-secondary">
+                Voltar
+            </a>
+
+
+        </form>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

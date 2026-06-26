@@ -1,0 +1,66 @@
+﻿@model DomeneOS.ViewModels.LoginViewModel
+
+@{
+    Layout = "LayoutLogin";
+    ViewData["Title"] = "Login";
+}
+
+<div class="login-container">
+    <section class="login-left">
+        <img src="~/images/ChatGPT Image 26 de jun. de 2026, 15_54_04.png" alt="DomeneTech" class="login-logo" />
+
+        <h1>DomeneOS</h1>
+
+        <p>
+            Sistema de gestão para<br />
+            assistência técnica
+        </p>
+    </section>
+
+    <section class="login-right">
+        <div class="login-form">
+            <h2>Bem-vindo!</h2>
+            <span>Faça login para acessar o sistema.</span>
+
+            <form asp-action="Login" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">E-mail</label>
+                    <input asp-for="Email" class="form-control" placeholder="seu@email.com" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Senha" class="form-label"></label>
+                    <input asp-for="Senha" class="form-control" placeholder="Digite sua senha" />
+                    <span asp-validation-for="Senha" class="text-danger"></span>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input asp-for="LembrarMe" class="form-check-input" />
+                    <label asp-for="LembrarMe" class="form-check-label">Lembrar-me</label>
+                </div>
+
+                <button type="submit" class="btn btn-login">
+                    <i class="bi bi-box-arrow-in-right"></i> Entrar
+                </button>
+
+                <div class="login-register">
+                    <span>Não possui uma conta?</span>
+                    <a asp-action="Registrar">Criar Conta</a>
+                </div>
+            </form>
+
+            <div class="login-footer">
+                © 2026 DomeneTech. Todos os direitos reservados.
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
