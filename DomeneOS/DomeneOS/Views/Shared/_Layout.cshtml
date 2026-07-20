@@ -1,5 +1,18 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using Microsoft.AspNetCore.Identity
+@using DomeneOS.Models
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ApplicationUser? usuario = null;
+
+    if(User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        usuario = await UserManager.GetUserAsync(User);
+    }
+}
+
+<!DOCTYPE html>
+<html lang="pt_BR">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -40,13 +53,18 @@
                                 <i class="bi bi-tools"></i> Ordens de Serviço
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               asp-controller="Produtos" asp-action="Index">
+                                <i class="bi bi-box-seam me-2"></i> Produtos</a>
+                        </li>
                     </ul>
                     <ul class="navbar-nav ms-auto">
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
                                 <span class="nav-link text-white">
-                                    <i class="bi bi-person-circle"></i> @User.Identity.Name
+                                    <i class="bi bi-person-circle"></i> @usuario?.Nome
                                 </span>
                             </li>
 

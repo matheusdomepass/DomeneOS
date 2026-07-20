@@ -1,0 +1,199 @@
+﻿@model DomeneOS.Models.Produto
+
+@{
+    ViewData["Title"] = "Detalhes do produto";
+}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="mb-1">Detalhes do produto</h2>
+
+            <p class="text-muted mb-0">
+                Consulte as informações cadastradas do produto.
+            </p>
+        </div>
+
+        <a asp-action="Detalhes"
+           asp-route-id="@Model.Id"
+           class="btn btn-warning">
+            <i class="bi bi-pencil-square me-1"></i>
+            Editar produto
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+                <div>
+                    <h4 class="mb-1">@Model.Nome</h4>
+
+                    <span class="text-muted">
+                        Código: @Model.Codigo
+                    </span>
+                </div>
+
+                <div>
+                    @if (Model.Ativo)
+                    {
+                        <span class="badge bg-success fs-6">
+                            Ativo
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary fs-6">
+                            Inativo
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="row g-4">
+
+                <div class="col-md-6">
+                    <div class="text-muted small mb-1">
+                        Fornecedor
+                    </div>
+
+                    <div class="fw-semibold">
+                        @(string.IsNullOrWhiteSpace(Model.Fornecedor)
+                            ? "Não informado"
+                            : Model.Fornecedor)
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="text-muted small mb-1">
+                        Quantidade em estoque
+                    </div>
+
+                    <div>
+                        @if (Model.EstoqueBaixo)
+                        {
+                            <span class="badge bg-danger fs-6">
+                                @Model.QuantidadeEstoque
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success fs-6">
+                                @Model.QuantidadeEstoque
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="text-muted small mb-1">
+                        Estoque mínimo
+                    </div>
+
+                    <div class="fw-semibold">
+                        @Model.EstoqueMinimo
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="text-muted small mb-1">
+                        Preço de compra
+                    </div>
+
+                    <div class="fw-semibold">
+                        @Model.PrecoCompra.ToString("C")
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="text-muted small mb-1">
+                        Preço de venda
+                    </div>
+
+                    <div class="fw-semibold">
+                        @Model.PrecoVenda.ToString("C")
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="text-muted small mb-1">
+                        Situação do estoque
+                    </div>
+
+                    @if (Model.EstoqueBaixo)
+                    {
+                        <div class="alert alert-danger mb-0">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+
+                            Estoque baixo. A quantidade atual está igual ou abaixo do estoque mínimo.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-success mb-0">
+                            <i class="bi bi-check-circle me-1"></i>
+
+                            Estoque dentro do nível esperado.
+                        </div>
+                    }
+                </div>
+
+                <div class="col-12">
+                    <div class="text-muted small mb-1">
+                        Descrição
+                    </div>
+
+                    <div class="border rounded p-3 bg-light">
+                        @(string.IsNullOrWhiteSpace(Model.Descricao)
+                            ? "Nenhuma descrição informada."
+                            : Model.Descricao)
+                    </div>
+                </div>
+
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
+
+                <a asp-action="Index"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Voltar
+                </a>
+
+                <form asp-action="AlterarStatus"
+                      asp-route-id="@Model.Id"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    @if (Model.Ativo)
+                    {
+                        <button type="submit"
+                                class="btn btn-danger"
+                                onclick="return confirm('Deseja desativar este produto?');">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Desativar produto
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="submit"
+                                class="btn btn-success"
+                                onclick="return confirm('Deseja ativar este produto?');">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Ativar produto
+                        </button>
+                    }
+
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>

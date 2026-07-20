@@ -1,0 +1,215 @@
+﻿@model DomeneOS.Models.Produto
+
+@{
+    ViewData["Title"] = "Editar produto";
+}
+
+<div class="container-fluid py-4">
+
+    <div class="mb-4">
+        <h2 class="mb-1">Editar produto</h2>
+
+        <p class="text-muted mb-0">
+            Atualize as informações do produto.
+        </p>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <form asp-action="Editar" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="Ativo" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger"
+                     role="alert">
+                </div>
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+                        <label asp-for="Codigo" class="form-label"></label>
+
+                        <input asp-for="Codigo"
+                               class="form-control"
+                               readonly />
+
+                        <span asp-validation-for="Codigo"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label asp-for="Nome" class="form-label"></label>
+
+                        <input asp-for="Nome"
+                               class="form-control"
+                               placeholder="Digite o nome do produto"
+                               autocomplete="off" />
+
+                        <span asp-validation-for="Nome"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Fornecedor" class="form-label"></label>
+
+                        <input asp-for="Fornecedor"
+                               class="form-control"
+                               placeholder="Digite o nome do fornecedor"
+                               autocomplete="off" />
+
+                        <span asp-validation-for="Fornecedor"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="QuantidadeEstoque"
+                               class="form-label">
+                        </label>
+
+                        <input asp-for="QuantidadeEstoque"
+                               class="form-control"
+                               min="0" />
+
+                        <span asp-validation-for="QuantidadeEstoque"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="EstoqueMinimo"
+                               class="form-label">
+                        </label>
+
+                        <input asp-for="EstoqueMinimo"
+                               class="form-control"
+                               min="0" />
+
+                        <span asp-validation-for="EstoqueMinimo"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="PrecoCompra"
+                               class="form-label">
+                        </label>
+
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+
+                            <input asp-for="PrecoCompra"
+                                   type="text"
+                                   class="form-control campo-dinheiro"
+                                   inputmode="decimal"
+                                   autocomplete="off"
+                                   data-val="false"
+                                   placeholder="0,00" />
+                        </div>
+
+                        <span asp-validation-for="PrecoCompra"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="PrecoVenda"
+                               class="form-label">
+                        </label>
+
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+
+                            <input asp-for="PrecoVenda"
+                                   type="text"
+                                   class="form-control campo-dinheiro"
+                                   inputmode="decimal"
+                                   autocomplete="off"
+                                   data-val="false"
+                                   placeholder="0,00" />
+                        </div>
+
+                        <span asp-validation-for="PrecoVenda"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Descricao"
+                               class="form-label">
+                        </label>
+
+                        <textarea asp-for="Descricao"
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="Digite uma descrição para o produto"></textarea>
+
+                        <span asp-validation-for="Descricao"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
+
+                    <a asp-action="Index"
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>
+                        Voltar
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i>
+                        Salvar alterações
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        document.querySelectorAll(".campo-dinheiro").forEach(function (campo) {
+            campo.addEventListener("input", function () {
+                let valor = this.value;
+
+                // Permite somente números e vírgula
+                valor = valor.replace(/[^0-9,]/g, "");
+
+                // Impede mais de uma vírgula
+                const partes = valor.split(",");
+
+                if (partes.length > 2) {
+                    valor = partes[0] + "," + partes.slice(1).join("");
+                }
+
+                // Limita a duas casas decimais
+                if (valor.includes(",")) {
+                    const partesDecimais = valor.split(",");
+                    valor = partesDecimais[0] + "," +
+                        partesDecimais[1].substring(0, 2);
+                }
+
+                this.value = valor;
+            });
+        });
+    </script>
+}

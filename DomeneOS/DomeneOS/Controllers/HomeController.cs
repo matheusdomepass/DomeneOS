@@ -28,8 +28,14 @@ namespace DomeneOS.Controllers
 
             ViewBag.TotalFaturado = await _context.OrdensServico.Where(o => o.Status == StatusOrdemServico.Finalizada).SumAsync(o => o.Valor);
 
+            ViewBag.TotalProdutos = await _context.Produtos.CountAsync(p => p.Ativo);
+
+            ViewBag.ProdutosEstoqueBaixo = await _context.Produtos.CountAsync(p => p.Ativo && p.QuantidadeEstoque <= p.EstoqueMinimo);
+
+
             return View();
         }
+
 
     }
 }

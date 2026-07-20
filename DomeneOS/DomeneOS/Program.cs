@@ -4,6 +4,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using QuestPDF.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using DomeneOS.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<BancoContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Database")));
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
 

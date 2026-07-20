@@ -21,18 +21,35 @@ namespace DomeneOS.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index(StatusOrdemServico? status)
+        public async Task<IActionResult> Index(StatusOrdemServico? status, string? pesquisa)
         {
-            var ordens =  _context.OrdensServico.Include(o => o.Cliente).AsQueryable();
+            var ordens = _context.OrdensServico
+                .Include(o => o.Cliente)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pesquisa))
+            {
+                pesquisa = pesquisa.Trim();
+
+                var pesquisaEhNumero = int.TryParse(pesquisa, out var numeroOrdem);
+
+                ordens = ordens.Where(o =>
+                    o.Cliente.Nome.Contains(pesquisa) ||
+                    o.DescricaoProblema.Contains(pesquisa) ||
+                    (pesquisaEhNumero && o.Id == numeroOrdem));
+            }
 
             if (status.HasValue)
             {
                 ordens = ordens.Where(o => o.Status == status.Value);
             }
 
-            ViewBag.StatusSelecionado = status;
+            ViewBag.Pesquisa = pesquisa;
+            ViewBag.StatusSelecionado = status?.ToString();
 
-            return View(await ordens.ToListAsync());
+            return View(await ordens
+                .OrderByDescending(o => o.DataAbertura)
+                .ToListAsync());
         }
 
         public IActionResult Criar()
@@ -161,6 +178,8 @@ namespace DomeneOS.Controllers
 
             _context.OrdensServico.Remove(ordem);
             await _context.SaveChangesAsync();
+
+            TempData["Sucesso"] = "Ordem de serviço excluída com sucesso";
 
             return RedirectToAction(nameof(Index));
         }

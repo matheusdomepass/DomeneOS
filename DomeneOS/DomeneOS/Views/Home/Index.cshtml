@@ -1,90 +1,232 @@
-﻿<div class="container">
-<div class="text-center mb-5">
-    <h1>DomeneOS</h1>
-    <p class="lead">Sistema de gerenciamento de clientes e ordens de serviço</p>
-</div>
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
 
-<h4 class="mb-3">Resumo Operacional</h4>
+<div class="container-fluid py-4">
 
-<div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card shadow-sm text-center dashboard-card card-clientes">
-            <div class="card-body">
-                <h5 class="card-title">Clientes</h5>
-                <h2>@ViewBag.TotalClientes</h2>
-            </div>
-        </div>
+    <div class="mb-4">
+        <h2 class="mb-1">Dashboard</h2>
+
+        <p class="text-muted mb-0">
+            Acompanhe os principais indicadores do sistema.
+        </p>
     </div>
 
-    <div class="col-md-3 mb-3">
-        <div class="card shadow-sm text-center dashboard-card card-ordens">
-            <div class="card-body">
-                <h5 class="card-title">Ordens</h5>
-                <h2>@ViewBag.TotalOrdens</h2>
+    <div class="row g-3 mb-4">
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small mb-1">
+                            Clientes
+                        </div>
+
+                        <h2 class="mb-0">
+                            @ViewBag.TotalClientes
+                        </h2>
+                    </div>
+
+                    <div class="fs-1 text-primary">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-3 mb-3">
-        <div class="card shadow-sm text-center dashboard-card card-abertas">
-            <div class="card-body">
-                <h5 class="card-title">Abertas</h5>
-                <h2>@ViewBag.OrdensAbertas</h2>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small mb-1">
+                            Produtos ativos
+                        </div>
+
+                        <h2 class="mb-0">
+                            @ViewBag.TotalProdutos
+                        </h2>
+                    </div>
+
+                    <div class="fs-1 text-success">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-3 mb-3">
-        <div class="card shadow-sm text-center dashboard-card card-finalizadas">
-            <div class="card-body">
-                <h5 class="card-title">Finalizadas</h5>
-                <h2>@ViewBag.OrdensFinalizadas</h2>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small mb-1">
+                            Ordens abertas
+                        </div>
+
+                        <h2 class="mb-0">
+                            @ViewBag.OrdensAbertas
+                        </h2>
+                    </div>
+
+                    <div class="fs-1 text-warning">
+                        <i class="bi bi-clipboard2-check"></i>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
-<div class="row mb-5">
-    <div class="col-md-3 mb-3">
-        <div class="card shadow-sm text-center dashboard-card card-abertas">
-            <div class="card-body">
-                <h5 class="card-title">Em Andamento</h5>
-                <h2>@ViewBag.OrdensEmAndamento</h2>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small mb-1">
+                            Estoque baixo
+                        </div>
+
+                        <h2 class="mb-0">
+                            @ViewBag.ProdutosEstoqueBaixo
+                        </h2>
+                    </div>
+
+                    <div class="fs-1 text-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
             </div>
         </div>
+
     </div>
 
-    <div class="col-md-3 mb-3">
-        <div class="card shadow-sm text-center dashboard-card card-canceladas">
-            <div class="card-body">
-                <h5 class="card-title">Canceladas</h5>
-                <h2>@ViewBag.OrdensCanceladas</h2>
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">
+                        Total de ordens
+                    </div>
+
+                    <h3 class="mb-0">
+                        @ViewBag.TotalOrdens
+                    </h3>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
-<h4 class="mt-4 mb-3">Resumo Financeiro</h4>
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">
+                        Em andamento
+                    </div>
 
-<div class="row mb-5">
-    <div class="col-md-4 mb-3">
-        <div class="card shadow-sm text-center">
-            <div class="card-body">
-                <h5 class="card-title">Total faturado</h5>
-                <h2>@ViewBag.TotalFaturado.ToString("C")</h2>
-                <small class="text-muted">Somente ordens finalizadas</small>
+                    <h3 class="mb-0">
+                        @ViewBag.OrdensEmAndamento
+                    </h3>
+                </div>
             </div>
         </div>
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">
+                        Finalizadas
+                    </div>
+
+                    <h3 class="mb-0">
+                        @ViewBag.OrdensFinalizadas
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small mb-1">
+                        Canceladas
+                    </div>
+
+                    <h3 class="mb-0">
+                        @ViewBag.OrdensCanceladas
+                    </h3>
+                </div>
+            </div>
+        </div>
+
     </div>
-</div>
 
-<div class="text-center">
-    <a asp-controller="Clientes" asp-action="Index" class="btn btn-primary btn-lg me-2">
-        Gerenciar Clientes
-    </a>
+    <div class="row g-3">
 
-    <a asp-controller="OrdensServico" asp-action="Index" class="btn btn-success btn-lg">
-        Gerenciar Ordens
-    </a>
-</div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="mb-1">
+                                Resumo financeiro
+                            </h5>
+
+                            <p class="text-muted mb-0">
+                                Valores das ordens finalizadas.
+                            </p>
+                        </div>
+
+                        <div class="fs-2 text-success">
+                            <i class="bi bi-cash-coin"></i>
+                        </div>
+                    </div>
+
+                    <h2 class="mb-1">
+                        @ViewBag.TotalFaturado.ToString("C")
+                    </h2>
+
+                    <small class="text-muted">
+                        Total faturado
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h5 class="mb-1">
+                        Acesso rápido
+                    </h5>
+
+                    <p class="text-muted mb-4">
+                        Acesse os principais módulos do sistema.
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        <a asp-controller="Clientes"
+                           asp-action="Index"
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-people me-1"></i>
+                            Clientes
+                        </a>
+
+                        <a asp-controller="OrdensServico"
+                           asp-action="Index"
+                           class="btn btn-outline-success">
+                            <i class="bi bi-tools me-1"></i>
+                            Ordens de Serviço
+                        </a>
+
+                        <a asp-controller="Produtos"
+                           asp-action="Index"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-box-seam me-1"></i>
+                            Produtos
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 </div>

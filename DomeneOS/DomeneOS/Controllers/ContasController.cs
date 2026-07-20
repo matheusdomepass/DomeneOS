@@ -1,4 +1,5 @@
-﻿using DomeneOS.ViewModels;
+﻿using DomeneOS.Models;
+using DomeneOS.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,12 +7,12 @@ namespace DomeneOS.Controllers
 {
     public class ContasController : Controller
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public ContasController(
-            SignInManager<IdentityUser> signInManager,
-            UserManager<IdentityUser> userManager)
+            SignInManager<ApplicationUser> signInManager,
+            UserManager<ApplicationUser> userManager)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -60,8 +61,9 @@ namespace DomeneOS.Controllers
                 return View(model);
             }
 
-            var usuario = new IdentityUser
+            var usuario = new ApplicationUser
             {
+                Nome = model.Nome,
                 UserName = model.Email,
                 Email = model.Email
             };
