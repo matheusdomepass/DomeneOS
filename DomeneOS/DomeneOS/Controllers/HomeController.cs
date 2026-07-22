@@ -26,7 +26,16 @@ namespace DomeneOS.Controllers
             ViewBag.OrdensFinalizadas = await _context.OrdensServico.CountAsync(o => o.Status == StatusOrdemServico.Finalizada);
             ViewBag.OrdensCanceladas = await _context.OrdensServico.CountAsync(o => o.Status == StatusOrdemServico.Cancelada);
 
-            ViewBag.TotalFaturado = await _context.OrdensServico.Where(o => o.Status == StatusOrdemServico.Finalizada).SumAsync(o => o.Valor);
+            var totalServicos = await _context.OrdensServico.Where(o => o.Status == StatusOrdemServico.Finalizada)
+            .SumAsync(o => (decimal?)o.Valor) ?? 0;
+
+            var totalProdutos = await _context.OrdemServicoProdutos
+                .Where(item =>
+                    item.OrdemServico.Status == StatusOrdemServico.Finalizada)
+                .SumAsync(item =>
+                    (decimal?)(item.Quantidade * item.PrecoUnitario)) ?? 0;
+
+            ViewBag.TotalFaturado = totalServicos + totalProdutos;
 
             ViewBag.TotalProdutos = await _context.Produtos.CountAsync(p => p.Ativo);
 

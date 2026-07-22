@@ -43,6 +43,8 @@ namespace DomeneOS.Models
 
         public bool Ativo { get; set; } = true;
 
+        public ICollection<OrdemServicoProduto> OrdensServico { get; set; } = new List<OrdemServicoProduto>();
+
         [NotMapped]
         public bool EstoqueBaixo =>
             QuantidadeEstoque <= EstoqueMinimo;

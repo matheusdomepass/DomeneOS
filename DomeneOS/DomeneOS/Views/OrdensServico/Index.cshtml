@@ -159,7 +159,7 @@
                                 <th>Cliente</th>
                                 <th>Descrição</th>
                                 <th>Status</th>
-                                <th>Valor</th>
+                                <th>Total</th>
                                 <th>Data de Abertura</th>
                                 <th>Finalização</th>
                                 <th class="text-end">Ações</th>
@@ -207,8 +207,21 @@
                                         }
                                     </td>
 
+                                    @{
+                                        var totalProdutos = ordem.ProdutosUtilizados
+                                        .Sum(item => item.Quantidade * item.PrecoUnitario);
+
+                                        var totalOrdem = ordem.Valor + totalProdutos;
+                                    }
+
                                     <td>
-                                        @ordem.Valor.ToString("C")
+                                        <span class="fw-semibold">
+                                            @totalOrdem.ToString("C")
+                                        </span>
+
+                                        <small class="d-block text-muted">
+                                            Serviço: @ordem.Valor.ToString("C")
+                                        </small>
                                     </td>
 
                                     <td>
@@ -222,19 +235,44 @@
                                     </td>
 
                                     <td class="text-end">
-                                        <a asp-action="Detalhes"
-                                           asp-route-id="@ordem.Id"
-                                           class="btn btn-info btn-sm">
-                                            <i class="bi bi-eye"></i>
-                                            Detalhes
-                                        </a>
+                                        @if (ordem.Status == StatusOrdemServico.Aberta)
+                                        {
+                                            <a asp-action="Detalhes"
+                                               asp-route-id="@ordem.Id"
+                                               class="btn btn-primary btn-sm">
+                                                <i class="bi bi-play-circle"></i>
+                                                Iniciar atendimento
+                                            </a>
+                                        }
+                                        else if (ordem.Status == StatusOrdemServico.EmAndamento)
+                                        {
+                                            <a asp-action="Detalhes"
+                                               asp-route-id="@ordem.Id"
+                                               class="btn btn-warning btn-sm">
+                                                <i class="bi bi-tools"></i>
+                                                Gerenciar atendimento
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-action="Detalhes"
+                                               asp-route-id="@ordem.Id"
+                                               class="btn btn-info btn-sm">
+                                                <i class="bi bi-eye"></i>
+                                                Ver detalhes
+                                            </a>
+                                        }
 
-                                        <a asp-action="Editar"
-                                           asp-route-id="@ordem.Id"
-                                           class="btn btn-warning btn-sm">
-                                            <i class="bi bi-pencil-square"></i>
-                                            Editar
-                                        </a>
+                                        @if (ordem.Status != StatusOrdemServico.Finalizada &&
+                                       ordem.Status != StatusOrdemServico.Cancelada)
+                                        {
+                                            <a asp-action="Editar"
+                                               asp-route-id="@ordem.Id"
+                                               class="btn btn-warning btn-sm">
+                                                <i class="bi bi-pencil-square"></i>
+                                                Editar
+                                            </a>
+                                        }
 
                                         <form asp-action="Excluir"
                                               asp-route-id="@ordem.Id"

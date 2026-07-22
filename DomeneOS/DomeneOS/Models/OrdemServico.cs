@@ -13,6 +13,7 @@ namespace DomeneOS.Models
         public string? Diagnostico { get; set; }
         [StringLength(500)]
         public string? Solucao { get; set; }
+        [Display(Name = "Valor mão de obra")]
         [Range(0.01, 99999999.99, ErrorMessage = "O valor deve ser maior que zero")]
         [Column(TypeName = "decimal(10,2)")]
         public decimal Valor { get; set; }
@@ -22,6 +23,7 @@ namespace DomeneOS.Models
         [Required(ErrorMessage = "Selecione um cliente")]
         public int ClienteId { get; set; }
         public Cliente Cliente { get; set; } = null!;
+        public ICollection<OrdemServicoProduto> ProdutosUtilizados { get; set; } = new List<OrdemServicoProduto>();
     }
 
     public enum StatusOrdemServico

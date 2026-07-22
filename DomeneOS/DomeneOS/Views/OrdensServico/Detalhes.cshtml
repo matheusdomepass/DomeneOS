@@ -1,57 +1,393 @@
 ﻿@model DomeneOS.Models.OrdemServico
 @using DomeneOS.Models
 
-<h1 class="mb-4">Detalhes da Ordem de Serviço</h1>
+@{
+    ViewData["Title"] = "Detalhes da Ordem";
 
-<div class="card shadow-sm mb-4">
-    <div class="card-header bg-dark text-white">
-        Dados da Ordem
-    </div>
+    var produtosDisponiveis =
+        ViewBag.ProdutosDisponiveis as IEnumerable<Produto>
+        ?? Enumerable.Empty<Produto>();
 
-    <div class="card-body">
-        <p><strong>Cliente:</strong> @Model.Cliente.Nome</p>
-        <p><strong>Descrição:</strong> @Model.DescricaoProblema</p>
-        <p><strong>Diagnóstico:</strong> @(string.IsNullOrWhiteSpace(Model.Diagnostico) ? "Não informado" : Model.Diagnostico)</p>
-        <p><strong>Solução:</strong> @(string.IsNullOrWhiteSpace(Model.Solucao) ? "Não informado" : Model.Solucao)</p>
-        <p><strong>Valor:</strong> @Model.Valor.ToString("C")</p>
-        <p>
-            <strong>Status:</strong>
-            @switch (Model.Status)
-            {
-                case StatusOrdemServico.Aberta:
-                    <span class="badge bg-primary">Aberta</span>
-                    break;
-                case StatusOrdemServico.EmAndamento:
-                    <span class="badge bg-warning text-dark">Em andamento</span>
-                    break;
-                case StatusOrdemServico.Finalizada:
-                    <span class="badge bg-success">Finalizada</span>
-                    break;
-                case StatusOrdemServico.Cancelada:
-                    <span class="badge bg-danger">Cancelada</span>
-                    break;
-            }
-        </p>
-        <p><strong>Abertura:</strong> @Model.DataAbertura.ToString("dd/MM/yyyy")</p>
-        <p><strong>Finalização:</strong>
-            @(Model.DataFinalizacao.HasValue ? Model.DataFinalizacao.Value.ToString("dd/MM/yyyy HH:mm") : "Não finalizada")
+    var podeAlterarProdutos =
+        Model.Status != StatusOrdemServico.Finalizada &&
+        Model.Status != StatusOrdemServico.Cancelada;
+
+    var totalProdutos = Model.ProdutosUtilizados
+        .Sum(item => item.Quantidade * item.PrecoUnitario);
+
+    var totalOrdem = Model.Valor + totalProdutos;
+}
+
+<div class="container-fluid py-4">
+
+    @if (TempData["Sucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
+
+            <i class="bi bi-check-circle me-1"></i>
+            @TempData["Sucesso"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Fechar">
+            </button>
+        </div>
+    }
+
+    @if (TempData["Erro"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show"
+             role="alert">
+
+            <i class="bi bi-exclamation-circle me-1"></i>
+            @TempData["Erro"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Fechar">
+            </button>
+        </div>
+    }
+
+    <div class="d-flex flex-column flex-md-row
+                justify-content-between align-items-md-center
+                gap-3 mb-4">
+
+        <div>
+            <h2 class="mb-1">
+                Ordem de Serviço #@Model.Id
+            </h2>
+
+            <p class="text-muted mb-0">
+                Consulte os dados e os produtos utilizados na ordem.
             </p>
+        </div>
+
+        @switch (Model.Status)
+        {
+            case StatusOrdemServico.Aberta:
+                <span class="badge bg-primary fs-6">Aberta</span>
+                break;
+
+            case StatusOrdemServico.EmAndamento:
+                <span class="badge bg-warning text-dark fs-6">
+                    Em andamento
+                </span>
+                break;
+
+            case StatusOrdemServico.Finalizada:
+                <span class="badge bg-success fs-6">Finalizada</span>
+                break;
+
+            case StatusOrdemServico.Cancelada:
+                <span class="badge bg-danger fs-6">Cancelada</span>
+                break;
+        }
     </div>
-</div>
 
-<div class="d-flex gap-2">
-    <div class="d-flex gap-2">
-        <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-warning px-4">
-            <i class="bi bi-pencil-square"></i> Editar
-        </a>
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-dark text-white py-3">
+            <i class="bi bi-clipboard-check me-1"></i>
+            Dados da ordem
+        </div>
 
-        <a asp-action="GerarPdf" asp-route-id="@Model.Id" class="btn btn-domene-primary px-4">
-            <i class="bi bi-file-earmark-pdf"></i> Gerar PDF
-        </a>
+        <div class="card-body p-4">
+            <div class="row g-4">
 
-        <a asp-action="Index" class="btn btn-secondary px-4">
-            <i class="bi bi-arrow-left"></i> Voltar
-        </a>
+                <div class="col-md-6">
+                    <small class="text-muted d-block">Cliente</small>
+                    <span class="fw-semibold">@Model.Cliente.Nome</span>
+                </div>
+
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Data de abertura</small>
+                    <span>@Model.DataAbertura.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Finalização</small>
+
+                    <span>
+                        @(Model.DataFinalizacao.HasValue
+                            ? Model.DataFinalizacao.Value.ToString("dd/MM/yyyy HH:mm")
+                            : "Não finalizada")
+                    </span>
+                </div>
+
+                <div class="col-12">
+                    <small class="text-muted d-block">
+                        Descrição do problema
+                    </small>
+
+                    <span>@Model.DescricaoProblema</span>
+                </div>
+
+                <div class="col-md-6">
+                    <small class="text-muted d-block">Diagnóstico</small>
+
+                    <span>
+                        @(string.IsNullOrWhiteSpace(Model.Diagnostico)
+                            ? "Não informado"
+                            : Model.Diagnostico)
+                    </span>
+                </div>
+
+                <div class="col-md-6">
+                    <small class="text-muted d-block">Solução</small>
+
+                    <span>
+                        @(string.IsNullOrWhiteSpace(Model.Solucao)
+                            ? "Não informada"
+                            : Model.Solucao)
+                    </span>
+                </div>
+
+            </div>
+        </div>
     </div>
-</div>
 
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-dark text-white py-3">
+            <i class="bi bi-box-seam me-1"></i>
+            Produtos utilizados
+        </div>
+
+        <div class="card-body p-4">
+
+            @if (podeAlterarProdutos)
+            {
+                @if (produtosDisponiveis.Any())
+                {
+                    <form asp-action="AdicionarProduto"
+                          method="post"
+                          class="row g-3 align-items-end mb-4">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="ordemServicoId"
+                               value="@Model.Id" />
+
+                        <div class="col-md-7">
+                            <label for="produtoId" class="form-label">
+                                Produto
+                            </label>
+
+                            <select id="produtoId"
+                                    name="produtoId"
+                                    class="form-select"
+                                    required>
+
+                                <option value="">
+                                    Selecione um produto
+                                </option>
+
+                                @foreach (var produto in produtosDisponiveis)
+                                {
+                                    <option value="@produto.Id">
+                                        @produto.Nome —
+                                        Estoque: @produto.QuantidadeEstoque —
+                                        @produto.PrecoVenda.ToString("C")
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="quantidade" class="form-label">
+                                Quantidade
+                            </label>
+
+                            <input type="number"
+                                   id="quantidade"
+                                   name="quantidade"
+                                   class="form-control"
+                                   value="1"
+                                   min="1"
+                                   required />
+                        </div>
+
+                        <div class="col-md-3 d-grid">
+                            <button type="submit"
+                                    class="btn btn-primary">
+
+                                <i class="bi bi-plus-lg me-1"></i>
+                                Adicionar produto
+                            </button>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Não existem produtos ativos com estoque disponível.
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-secondary">
+                    <i class="bi bi-lock me-1"></i>
+                    Os produtos não podem ser alterados porque esta ordem está
+                    @Model.Status.ToString().ToLower().
+                </div>
+            }
+
+            @if (!Model.ProdutosUtilizados.Any())
+            {
+                <div class="text-center py-4">
+                    <i class="bi bi-box-seam fs-1 text-muted"></i>
+
+                    <h5 class="mt-3">
+                        Nenhum produto utilizado
+                    </h5>
+
+                    <p class="text-muted mb-0">
+                        Adicione os produtos necessários para executar o serviço.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th>Código</th>
+                                <th>Produto</th>
+                                <th class="text-center">Quantidade</th>
+                                <th class="text-end">Valor unitário</th>
+                                <th class="text-end">Subtotal</th>
+
+                                @if (podeAlterarProdutos)
+                                {
+                                    <th class="text-end">Ação</th>
+                                }
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in Model.ProdutosUtilizados)
+                            {
+                                <tr>
+                                    <td>@item.Produto.Codigo</td>
+
+                                    <td class="fw-semibold">
+                                        @item.Produto.Nome
+                                    </td>
+
+                                    <td class="text-center">
+                                        @item.Quantidade
+                                    </td>
+
+                                    <td class="text-end">
+                                        @item.PrecoUnitario.ToString("C")
+                                    </td>
+
+                                    <td class="text-end fw-semibold">
+                                        @((item.Quantidade * item.PrecoUnitario)
+                                            .ToString("C"))
+                                    </td>
+
+                                    @if (podeAlterarProdutos)
+                                    {
+                                        <td class="text-end">
+                                            <form asp-action="RemoverProduto"
+                                                  method="post"
+                                                  class="d-inline">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="id"
+                                                       value="@item.Id" />
+
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        title="Remover produto"
+                                                        onclick="return confirm('Deseja remover este produto da ordem e devolver a quantidade ao estoque?');">
+
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-muted">Valor do serviço</small>
+                    <h4 class="mb-0">@Model.Valor.ToString("C")</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-muted">Total dos produtos</small>
+                    <h4 class="mb-0">@totalProdutos.ToString("C")</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-primary shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-muted">Total da ordem</small>
+                    <h4 class="text-primary mb-0">
+                        @totalOrdem.ToString("C")
+                    </h4>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+
+       @if (Model.Status != StatusOrdemServico.Finalizada &&
+     Model.Status != StatusOrdemServico.Cancelada)
+    {
+        <a asp-action="Editar"
+           asp-route-id="@Model.Id"
+           class="btn btn-warning px-4">
+           <i class="bi bi-pencil-square me-1"></i>
+        Editar
+        </a>
+    }
+
+        <a asp-action="GerarPDF"
+           asp-route-id="@Model.Id"
+           class="btn btn-domene-primary px-4">
+
+            <i class="bi bi-file-earmark-pdf me-1"></i>
+            Gerar PDF
+        </a>
+
+        <a asp-action="Index"
+           class="btn btn-secondary px-4">
+
+            <i class="bi bi-arrow-left me-1"></i>
+            Voltar
+        </a>
+
+    </div>
+
+</div>

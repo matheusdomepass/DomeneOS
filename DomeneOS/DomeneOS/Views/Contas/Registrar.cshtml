@@ -2,61 +2,114 @@
 
 @{
     Layout = "LayoutLogin";
-    ViewData["Title"] = "Cadastro";
+    ViewData["Title"] = "Criar Conta";
 }
 
-<h1 class="mb-4">
-    <i class="bi bi-person-plus"></i>
-    Criar Conta
-</h1>
+<div class="login-container register-container">
+    <section class="login-left">
+        <img src="~/images/ChatGPT Image 26 de jun. de 2026, 15_54_04.png"
+             alt="DomeneTech"
+             class="login-logo" />
 
-<div class="card shadow-sm">
-    <div class="card-header bg-dark text-white">
-        Novo Usuário
-    </div>
+        <h1>DomeneOS</h1>
 
-    <div class="card-body">
-        <form asp-action="Registrar" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-            <div class="mb-3">
-                <label asp-for="Nome" class="form-label"></label>
-                <input asp-for="Nome"
-                       class="form-control"
-                       placeholder="Digite seu nome" />
-                <span asp-validation-for="Nome" class="text-danger"></span>
+        <p>
+            Sistema de gestão para<br />
+            assistência técnica
+        </p>
+    </section>
+
+    <section class="login-right">
+        <div class="login-form register-form">
+            <h2>Criar conta</h2>
+
+            <span>
+                Preencha seus dados para acessar o sistema.
+            </span>
+
+            <form asp-action="Registrar" method="post">
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3">
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Nome" class="form-label">
+                        Nome
+                    </label>
+
+                    <input asp-for="Nome"
+                           class="form-control"
+                           placeholder="Digite seu nome"
+                           autocomplete="name" />
+
+                    <span asp-validation-for="Nome"
+                          class="text-danger">
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">
+                        E-mail
+                    </label>
+
+                    <input asp-for="Email"
+                           class="form-control"
+                           placeholder="seu@email.com"
+                           autocomplete="email" />
+
+                    <span asp-validation-for="Email"
+                          class="text-danger">
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Senha" class="form-label">
+                        Senha
+                    </label>
+
+                    <input asp-for="Senha"
+                           class="form-control"
+                           placeholder="Digite sua senha"
+                           autocomplete="new-password" />
+
+                    <span asp-validation-for="Senha"
+                          class="text-danger">
+                    </span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="ConfirmarSenha" class="form-label">
+                        Confirmar senha
+                    </label>
+
+                    <input asp-for="ConfirmarSenha"
+                           class="form-control"
+                           placeholder="Digite a senha novamente"
+                           autocomplete="new-password" />
+
+                    <span asp-validation-for="ConfirmarSenha"
+                          class="text-danger">
+                    </span>
+                </div>
+
+                <button type="submit" class="btn btn-login">
+                    <i class="bi bi-person-plus"></i>
+                    Criar conta
+                </button>
+
+                <div class="login-register">
+                    <span>Já possui uma conta?</span>
+                    <a asp-action="Login">Entrar</a>
+                </div>
+            </form>
+
+            <div class="login-footer">
+                © 2026 DomeneTech. Todos os direitos reservados.
             </div>
-
-            <div class="mb-3">
-                <label asp-for="Email"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="Senha"></label>
-                <input asp-for="Senha" class="form-control" />
-                <span asp-validation-for="Senha" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="ConfirmarSenha"></label>
-                <input asp-for="ConfirmarSenha" class="form-control" />
-                <span asp-validation-for="ConfirmarSenha" class="text-danger"></span>
-            </div>
-
-            <button class="btn btn-success">
-                <i class="bi bi-person-plus"></i>
-                Cadastrar
-            </button>
-
-            <a asp-action="Login" class="btn btn-secondary">
-                Voltar
-            </a>
-
-
-        </form>
-    </div>
+        </div>
+    </section>
 </div>
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");

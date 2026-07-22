@@ -24,7 +24,7 @@ namespace DomeneOS.Controllers
         public async Task<IActionResult> Index(StatusOrdemServico? status, string? pesquisa)
         {
             var ordens = _context.OrdensServico
-                .Include(o => o.Cliente)
+                .Include(o => o.Cliente).Include(o => o.ProdutosUtilizados)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(pesquisa))
@@ -87,15 +87,24 @@ namespace DomeneOS.Controllers
 
         public async Task<IActionResult> Detalhes(int id)
         {
-            var ordem = await _context.OrdensServico.Include(p => p.Cliente).FirstOrDefaultAsync(p => p.Id == id);
+            var ordem = await _context.OrdensServico
+                .Include(o => o.Cliente)
+                .Include(o => o.ProdutosUtilizados)
+                    .ThenInclude(op => op.Produto)
+                .FirstOrDefaultAsync(o => o.Id == id);
 
             if (ordem == null)
             {
                 return NotFound();
             }
+
+            ViewBag.ProdutosDisponiveis = await _context.Produtos
+                .Where(p => p.Ativo && p.QuantidadeEstoque > 0)
+                .OrderBy(p => p.Nome)
+                .ToListAsync();
+
             return View(ordem);
         }
-
         public async Task<IActionResult> Editar(int id)
         {
             var ordem = await _context.OrdensServico.FindAsync(id);
@@ -105,7 +114,23 @@ namespace DomeneOS.Controllers
                 return NotFound();
             }
 
-            ViewBag.Clientes = new SelectList(_context.Clientes, "Id", "Nome", ordem.ClienteId);
+            if (ordem.Status == StatusOrdemServico.Finalizada ||
+                ordem.Status == StatusOrdemServico.Cancelada)
+            {
+                TempData["Erro"] =
+                    "Ordens finalizadas ou canceladas não podem ser editadas.";
+
+                return RedirectToAction(
+                    nameof(Detalhes),
+                    new { id = ordem.Id });
+            }
+
+            ViewBag.Clientes = new SelectList(
+                _context.Clientes,
+                "Id",
+                "Nome",
+                ordem.ClienteId);
+
             return View(ordem);
         }
 
@@ -144,6 +169,21 @@ namespace DomeneOS.Controllers
                 ordemBanco.Valor = ordem.Valor;
                 ordemBanco.Status = ordem.Status;
 
+                if (ordemBanco.Status == StatusOrdemServico.Finalizada || ordemBanco.Status == StatusOrdemServico.Cancelada)
+                {
+                    TempData["Erro"] =
+                        "Ordens finalizadas ou canceladas não podem ser editadas.";
+
+                    return RedirectToAction(
+                        nameof(Detalhes),
+                        new { id = ordemBanco.Id });
+                }
+
+                if (ordemBanco == null)
+                {
+                    return NotFound();
+                }
+
                 if (ordem.Status == StatusOrdemServico.Finalizada && ordemBanco.DataFinalizacao == null)
                 {
                     ordemBanco.DataFinalizacao = DateTime.Now;
@@ -169,29 +209,42 @@ namespace DomeneOS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Excluir(int id)
         {
-            var ordem = await _context.OrdensServico.FindAsync(id);
+            var ordem = await _context.OrdensServico.Include(o => o.ProdutosUtilizados).ThenInclude(op => op.Produto).FirstOrDefaultAsync(o => o.Id == id);
 
             if (ordem == null)
             {
                 return NotFound();
             }
 
+            foreach (var item in ordem.ProdutosUtilizados)
+            {
+                item.Produto.QuantidadeEstoque += item.Quantidade;
+            }
+
             _context.OrdensServico.Remove(ordem);
+
             await _context.SaveChangesAsync();
 
-            TempData["Sucesso"] = "Ordem de serviço excluída com sucesso";
+            TempData["Sucesso"] =
+                "Ordem de serviço excluída e produtos devolvidos ao estoque.";
 
             return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> GerarPDF(int id)
         {
-            var ordem = await _context.OrdensServico.Include(o => o.Cliente).FirstOrDefaultAsync(o => o.Id == id);
+            var ordem = await _context.OrdensServico.Include(o => o.Cliente).Include(o => o.ProdutosUtilizados)
+                    .ThenInclude(item => item.Produto).FirstOrDefaultAsync(o => o.Id == id);
 
             if (ordem == null)
             {
                 return NotFound();
             }
+
+            var totalProdutos = ordem.ProdutosUtilizados
+                .Sum(item => item.Quantidade * item.PrecoUnitario);
+
+            var totalOrdem = ordem.Valor + totalProdutos;
 
             var pdf = Document.Create(container =>
             {
@@ -200,38 +253,275 @@ namespace DomeneOS.Controllers
                     page.Margin(30);
                     page.Size(PageSizes.A4);
 
-                    page.Header().Text("DomeneOS - Ordem de Serviço").FontSize(20).Bold();
+                    page.Header()
+                        .Text("DomeneOS - Ordem de Serviço")
+                        .FontSize(20)
+                        .Bold();
 
                     page.Content().Column(col =>
                     {
                         col.Spacing(10);
 
-                        col.Item().Text($"OS N°: {ordem.Id}").Bold();
+                        col.Item()
+                            .Text($"OS N°: {ordem.Id}")
+                            .Bold();
+
                         col.Item().Text($"Cliente: {ordem.Cliente.Nome}");
                         col.Item().Text($"Telefone: {ordem.Cliente.Telefone}");
-                        col.Item().Text($"Email: {ordem.Cliente.Email}");
+                        col.Item().Text($"E-mail: {ordem.Cliente.Email}");
                         col.Item().Text($"CPF/CNPJ: {ordem.Cliente.CpfCnpj}");
 
                         col.Item().LineHorizontal(1);
 
-                        col.Item().Text($"Descrição do Problema: {ordem.DescricaoProblema}");
-                        col.Item().Text($"Diagnóstico: {ordem.Diagnostico ?? "Não informado"}");
-                        col.Item().Text($"Solução: {ordem.Solucao ?? "Não informado"}");
+                        col.Item().Text(
+                            $"Descrição do problema: {ordem.DescricaoProblema}");
+
+                        col.Item().Text(
+                            $"Diagnóstico: {ordem.Diagnostico ?? "Não informado"}");
+
+                        col.Item().Text(
+                            $"Solução: {ordem.Solucao ?? "Não informada"}");
+
+                        col.Item().LineHorizontal(1);
+
+                        col.Item()
+                            .Text("Produtos utilizados")
+                            .FontSize(13)
+                            .Bold();
+
+                        if (ordem.ProdutosUtilizados.Any())
+                        {
+                            col.Item().Table(table =>
+                            {
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    columns.RelativeColumn(4);
+                                    columns.RelativeColumn(1);
+                                    columns.RelativeColumn(2);
+                                    columns.RelativeColumn(2);
+                                });
+
+                                table.Header(header =>
+                                {
+                                    header.Cell()
+                                        .PaddingBottom(5)
+                                        .Text("Produto")
+                                        .Bold();
+
+                                    header.Cell()
+                                        .AlignCenter()
+                                        .PaddingBottom(5)
+                                        .Text("Qtd.")
+                                        .Bold();
+
+                                    header.Cell()
+                                        .AlignRight()
+                                        .PaddingBottom(5)
+                                        .Text("Valor unitário")
+                                        .Bold();
+
+                                    header.Cell()
+                                        .AlignRight()
+                                        .PaddingBottom(5)
+                                        .Text("Subtotal")
+                                        .Bold();
+                                });
+
+                                foreach (var item in ordem.ProdutosUtilizados)
+                                {
+                                    var subtotal =
+                                        item.Quantidade * item.PrecoUnitario;
+
+                                    table.Cell()
+                                        .PaddingVertical(4)
+                                        .Text(item.Produto.Nome);
+
+                                    table.Cell()
+                                        .AlignCenter()
+                                        .PaddingVertical(4)
+                                        .Text(item.Quantidade.ToString());
+
+                                    table.Cell()
+                                        .AlignRight()
+                                        .PaddingVertical(4)
+                                        .Text(item.PrecoUnitario.ToString("C"));
+
+                                    table.Cell()
+                                        .AlignRight()
+                                        .PaddingVertical(4)
+                                        .Text(subtotal.ToString("C"));
+                                }
+                            });
+                        }
+                        else
+                        {
+                            col.Item().Text("Nenhum produto utilizado.");
+                        }
 
                         col.Item().LineHorizontal(1);
 
                         col.Item().Text($"Status: {ordem.Status}");
-                        col.Item().Text($"Valor: {ordem.Valor.ToString("C")}");
-                        col.Item().Text($"Data de Abertura: {ordem.DataAbertura:dd/MM/yyyy HH:mm}");
-                        col.Item().Text($"Data de Finalização: {(ordem.DataFinalizacao.HasValue ? ordem.DataFinalizacao.Value.ToString("dd/MM/yyyy") : "Não finalizada")}");
 
+                        col.Item().Text(
+                            $"Valor da mão de obra: {ordem.Valor:C}");
+
+                        col.Item().Text(
+                            $"Total dos produtos: {totalProdutos:C}");
+
+                        col.Item()
+                            .Text($"Total da ordem: {totalOrdem:C}")
+                            .FontSize(14)
+                            .Bold();
+
+                        col.Item().Text(
+                            $"Data de abertura: {ordem.DataAbertura:dd/MM/yyyy HH:mm}");
+
+                        col.Item().Text(
+                            $"Data de finalização: " +
+                            $"{(ordem.DataFinalizacao.HasValue
+                                ? ordem.DataFinalizacao.Value.ToString("dd/MM/yyyy HH:mm")
+                                : "Não finalizada")}");
                     });
 
-                    page.Footer().AlignCenter().Text("Documento gerado com sucesso");
+                    page.Footer()
+                        .AlignCenter()
+                        .Text("Documento gerado pelo DomeneOS");
                 });
             }).GeneratePdf();
 
-            return File(pdf, "application/pdf", $"OS-{ordem.Id}.pdf");
+            return File(
+                pdf,
+                "application/pdf",
+                $"OS-{ordem.Id}.pdf");
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdicionarProduto(int ordemServicoId, int produtoId, int quantidade)
+        {
+            if (quantidade <= 0)
+            {
+                TempData["Erro"] = "Informe uma quantidade maior que zero.";
+
+                return RedirectToAction(
+                    nameof(Detalhes),
+                    new { id = ordemServicoId });
+            }
+
+            var ordem = await _context.OrdensServico
+                .FirstOrDefaultAsync(o => o.Id == ordemServicoId);
+
+            if (ordem == null)
+            {
+                return NotFound();
+            }
+
+            if (ordem.Status == StatusOrdemServico.Finalizada ||
+                ordem.Status == StatusOrdemServico.Cancelada)
+            {
+                TempData["Erro"] =
+                    "Não é possível adicionar produtos a uma ordem finalizada ou cancelada.";
+
+                return RedirectToAction(
+                    nameof(Detalhes),
+                    new { id = ordemServicoId });
+            }
+
+            var produto = await _context.Produtos
+                .FirstOrDefaultAsync(p => p.Id == produtoId && p.Ativo);
+
+            if (produto == null)
+            {
+                TempData["Erro"] = "Produto não encontrado ou inativo.";
+
+                return RedirectToAction(
+                    nameof(Detalhes),
+                    new { id = ordemServicoId });
+            }
+
+            if (produto.QuantidadeEstoque < quantidade)
+            {
+                TempData["Erro"] =
+                    $"Estoque insuficiente. Quantidade disponível: {produto.QuantidadeEstoque}.";
+
+                return RedirectToAction(
+                    nameof(Detalhes),
+                    new { id = ordemServicoId });
+            }
+
+            var itemExistente = await _context.OrdemServicoProdutos
+                .FirstOrDefaultAsync(op =>
+                    op.OrdemServicoId == ordemServicoId &&
+                    op.ProdutoId == produtoId);
+
+            if (itemExistente == null)
+            {
+                var novoItem = new OrdemServicoProduto
+                {
+                    OrdemServicoId = ordemServicoId,
+                    ProdutoId = produtoId,
+                    Quantidade = quantidade,
+                    PrecoUnitario = produto.PrecoVenda
+                };
+
+                _context.OrdemServicoProdutos.Add(novoItem);
+            }
+            else
+            {
+                itemExistente.Quantidade += quantidade;
+            }
+
+            produto.QuantidadeEstoque -= quantidade;
+
+            if (ordem.Status == StatusOrdemServico.Aberta)
+            {
+                ordem.Status = StatusOrdemServico.EmAndamento;
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Sucesso"] = "Produto adicionado à ordem de serviço.";
+
+            return RedirectToAction(nameof(Detalhes), new { id = ordemServicoId });
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoverProduto(int id)
+        {
+            var item = await _context.OrdemServicoProdutos
+                .Include(op => op.Produto)
+                .Include(op => op.OrdemServico)
+                .FirstOrDefaultAsync(op => op.Id == id);
+
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            if (item.OrdemServico.Status == StatusOrdemServico.Finalizada ||
+                item.OrdemServico.Status == StatusOrdemServico.Cancelada)
+            {
+                TempData["Erro"] =
+                    "Não é possível remover produtos de uma ordem finalizada ou cancelada.";
+
+                return RedirectToAction(
+                    nameof(Detalhes),
+                    new { id = item.OrdemServicoId });
+            }
+
+            var ordemServicoId = item.OrdemServicoId;
+
+            item.Produto.QuantidadeEstoque += item.Quantidade;
+
+            _context.OrdemServicoProdutos.Remove(item);
+
+            await _context.SaveChangesAsync();
+
+            TempData["Sucesso"] =
+                "Produto removido e quantidade devolvida ao estoque.";
+
+            return RedirectToAction(
+                nameof(Detalhes),
+                new { id = ordemServicoId });
         }
     }
 }

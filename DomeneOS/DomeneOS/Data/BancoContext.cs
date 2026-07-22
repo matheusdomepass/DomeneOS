@@ -12,6 +12,8 @@ namespace DomeneOS.Data
         public DbSet<Cliente> Clientes {  get; set; }
         public DbSet<OrdemServico> OrdensServico { get; set; }
         public DbSet<Produto> Produtos { get; set; }
+
+        public DbSet<OrdemServicoProduto> OrdemServicoProdutos { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -19,6 +21,24 @@ namespace DomeneOS.Data
             builder.Entity<Produto>()
                 .HasIndex(p => p.Codigo)
                 .IsUnique();
+
+            builder.Entity<OrdemServicoProduto>()
+            .HasIndex(op => new {
+            op.OrdemServicoId,
+            op.ProdutoId
+            }).IsUnique();
+
+            builder.Entity<OrdemServicoProduto>()
+                .HasOne(op => op.OrdemServico)
+                .WithMany(o => o.ProdutosUtilizados)
+                .HasForeignKey(op => op.OrdemServicoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<OrdemServicoProduto>()
+                .HasOne(op => op.Produto)
+                .WithMany(p => p.OrdensServico)
+                .HasForeignKey(op => op.ProdutoId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
