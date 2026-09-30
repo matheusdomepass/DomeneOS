@@ -1,0 +1,494 @@
+﻿@model IEnumerable<DomeneOS.Models.LancamentoFinanceiro>
+
+@{
+    ViewData["Title"] = "Financeiro";
+
+    var pesquisa = ViewBag.Pesquisa as string;
+    var tipoSelecionado = ViewBag.TipoSelecionado as string;
+    var statusSelecionado = ViewBag.StatusSelecionado as string;
+}
+
+<div class="container-fluid py-4">
+
+    @if (TempData["Erro"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Erro"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Fechar">
+            </button>
+        </div>
+    }
+
+    @if (TempData["Sucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Sucesso"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Fechar">
+            </button>
+        </div>
+    }
+
+    <!-- CABEÇALHO -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
+        <div>
+            <h1 class="mb-1">Financeiro</h1>
+
+            <p class="text-muted mb-0">
+                Gerencie receitas, despesas e pagamentos.
+            </p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+
+            <a asp-action="Criar"
+               asp-route-tipo="@DomeneOS.Models.TipoLancamento.Receita"
+               class="btn btn-success">
+
+                <i class="bi bi-plus-circle me-1"></i>
+                Nova Receita
+            </a>
+
+            <a asp-action="Criar"
+               asp-route-tipo="@DomeneOS.Models.TipoLancamento.Despesa"
+               class="btn btn-danger">
+
+                <i class="bi bi-dash-circle me-1"></i>
+                Nova Despesa
+            </a>
+
+        </div>
+    </div>
+
+    <!-- RESUMO FINANCEIRO -->
+    <div class="row mb-4">
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <small class="text-muted">
+                        Recebido no mês
+                    </small>
+
+                    <h3 class="mt-2 mb-0 text-success">
+                        @(((decimal)ViewBag.RecebidoMes).ToString("C"))
+                    </h3>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <small class="text-muted">
+                        A receber
+                    </small>
+
+                    <h3 class="mt-2 mb-0">
+                        @(((decimal)ViewBag.AReceber).ToString("C"))
+                    </h3>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <small class="text-muted">
+                        A pagar
+                    </small>
+
+                    <h3 class="mt-2 mb-0 text-danger">
+                        @(((decimal)ViewBag.APagar).ToString("C"))
+                    </h3>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+
+                    <small class="text-muted">
+                        Saldo do mês
+                    </small>
+
+                    <h3 class="mt-2 mb-0">
+                        @(((decimal)ViewBag.SaldoMes).ToString("C"))
+                    </h3>
+
+                </div>
+            </div>
+        </div>
+        <!-- FILTROS -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+
+                <form asp-action="Index"
+                      method="get"
+                      class="row g-3 align-items-end mb-3">
+
+                    <div class="col-md-10">
+
+                        <label for="pesquisa"
+                               class="form-label">
+                            Pesquisar
+                        </label>
+
+                        <input type="text"
+                               id="pesquisa"
+                               name="pesquisa"
+                               value="@pesquisa"
+                               class="form-control"
+                               placeholder="Pesquise pela descrição ou número da OS" />
+
+                        @if (!string.IsNullOrWhiteSpace(tipoSelecionado))
+                        {
+                            <input type="hidden"
+                                   name="tipo"
+                                   value="@tipoSelecionado" />
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(statusSelecionado))
+                        {
+                            <input type="hidden"
+                                   name="status"
+                                   value="@statusSelecionado" />
+                        }
+
+                    </div>
+
+                    <div class="col-md-2 d-grid">
+
+                        <button type="submit"
+                                class="btn btn-outline-primary">
+                            Buscar
+                        </button>
+
+                    </div>
+
+                </form>
+
+                <!-- TIPO -->
+                <div class="d-flex flex-wrap gap-2 mb-2">
+
+                    <span class="text-muted me-1 align-self-center">
+                        Tipo:
+                    </span>
+
+                    <a asp-action="Index"
+                       asp-route-pesquisa="@pesquisa"
+                       asp-route-status="@statusSelecionado"
+                       class="btn btn-outline-secondary btn-sm">
+                        Todos
+                    </a>
+
+                    <a asp-action="Index"
+                       asp-route-tipo="Receita"
+                       asp-route-pesquisa="@pesquisa"
+                       asp-route-status="@statusSelecionado"
+                       class="btn btn-outline-success btn-sm">
+                        Receita
+                    </a>
+
+                    <a asp-action="Index"
+                       asp-route-tipo="Despesa"
+                       asp-route-pesquisa="@pesquisa"
+                       asp-route-status="@statusSelecionado"
+                       class="btn btn-outline-danger btn-sm">
+                        Despesa
+                    </a>
+
+                </div>
+
+                <!-- STATUS -->
+                <div class="d-flex flex-wrap gap-2">
+
+                    <span class="text-muted me-1 align-self-center">
+                        Status:
+                    </span>
+
+                    <a asp-action="Index"
+                       asp-route-pesquisa="@pesquisa"
+                       asp-route-tipo="@tipoSelecionado"
+                       class="btn btn-outline-secondary btn-sm">
+                        Todos
+                    </a>
+
+                    <a asp-action="Index"
+                       asp-route-status="Pendente"
+                       asp-route-pesquisa="@pesquisa"
+                       asp-route-tipo="@tipoSelecionado"
+                       class="btn btn-outline-warning btn-sm">
+                        Pendente
+                    </a>
+
+                    <a asp-action="Index"
+                       asp-route-status="Pago"
+                       asp-route-pesquisa="@pesquisa"
+                       asp-route-tipo="@tipoSelecionado"
+                       class="btn btn-outline-success btn-sm">
+                        Pago
+                    </a>
+
+                    <a asp-action="Index"
+                       asp-route-status="Cancelado"
+                       asp-route-pesquisa="@pesquisa"
+                       asp-route-tipo="@tipoSelecionado"
+                       class="btn btn-outline-danger btn-sm">
+                        Cancelado
+                    </a>
+
+                    @if (!string.IsNullOrWhiteSpace(pesquisa) ||
+                    !string.IsNullOrWhiteSpace(tipoSelecionado) ||
+                    !string.IsNullOrWhiteSpace(statusSelecionado))
+                    {
+                        <a asp-action="Index"
+                           class="btn btn-link btn-sm text-decoration-none">
+                            Limpar filtros
+                        </a>
+                    }
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TABELA -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+
+                    <h5>Nenhum lançamento financeiro encontrado</h5>
+
+                    <p class="text-muted mb-3">
+                        Cadastre uma receita ou despesa para começar.
+                    </p>
+
+                    <a asp-action="Criar"
+                       asp-route-tipo="@DomeneOS.Models.TipoLancamento.Receita"
+                       class="btn btn-success">
+
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Nova Receita
+                    </a>
+
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-striped table-hover align-middle mb-0">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Origem</th>
+                                <th>Tipo</th>
+                                <th>Valor</th>
+                                <th>Vencimento</th>
+                                <th>Status</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+
+                                    <!-- DESCRIÇÃO -->
+                                    <td class="fw-semibold">
+                                        @item.Descricao
+                                    </td>
+
+                                    <!-- ORIGEM -->
+                                    <td>
+                                        @if (item.OrdemServicoId.HasValue)
+                                        {
+                                            <a asp-controller="OrdensServico"
+                                               asp-action="Detalhes"
+                                               asp-route-id="@item.OrdemServicoId"
+                                               class="text-decoration-none">
+
+                                                <i class="bi bi-tools me-1"></i>
+                                                OS #@item.OrdemServicoId
+
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                Manual
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <!-- TIPO -->
+                                    <td>
+                                        @if (item.Tipo == DomeneOS.Models.TipoLancamento.Receita)
+                                        {
+                                            <span class="badge bg-success">
+                                                Receita
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                Despesa
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <!-- VALOR -->
+                                    <td>
+                                        <span class="fw-semibold">
+                                            @item.Valor.ToString("C")
+                                        </span>
+                                    </td>
+
+                                    <!-- VENCIMENTO -->
+                                    <td>
+                                        @item.DataVencimento.ToString("dd/MM/yyyy")
+                                    </td>
+
+                                    <!-- STATUS -->
+                                    <td>
+
+                                        @switch (item.Status)
+                                        {
+                                            case DomeneOS.Models.StatusLancamento.Pendente:
+
+                                                <span class="badge bg-warning text-dark">
+                                                    Pendente
+                                                </span>
+
+                                                break;
+
+                                            case DomeneOS.Models.StatusLancamento.Pago:
+
+                                                <span class="badge bg-success">
+                                                    Pago
+                                                </span>
+
+                                                break;
+
+                                            case DomeneOS.Models.StatusLancamento.Cancelado:
+
+                                                <span class="badge bg-secondary">
+                                                    Cancelado
+                                                </span>
+
+                                                break;
+                                        }
+
+                                    </td>
+
+                                    <!-- AÇÕES -->
+                                    <td class="text-end">
+
+                                        @if (item.Status == DomeneOS.Models.StatusLancamento.Pendente)
+                                        {
+                                            @if (!item.OrdemServicoId.HasValue)
+                                            {
+                                                <a asp-action="Editar"
+                                                   asp-route-id="@item.Id"
+                                                   class="btn btn-warning btn-sm">
+
+                                                    <i class="bi bi-pencil-square"></i>
+                                                    Editar
+
+                                                </a>
+                                            }
+
+                                            <a asp-action="RegistrarPagamento"
+                                               asp-route-id="@item.Id"
+                                               class="btn btn-success btn-sm">
+
+                                                <i class="bi bi-check-circle"></i>
+                                                Registrar pagamento
+
+                                            </a>
+
+                                            <form asp-action="Cancelar"
+                                                  asp-route-id="@item.Id"
+                                                  method="post"
+                                                  class="d-inline">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit"
+                                                        class="btn btn-danger btn-sm"
+                                                        onclick="return confirm('Deseja realmente cancelar este lançamento?');">
+
+                                                    <i class="bi bi-x-circle"></i>
+                                                    Cancelar
+
+                                                </button>
+
+                                            </form>
+                                        }
+                                        else if (item.Status == DomeneOS.Models.StatusLancamento.Pago)
+                                        {
+                                            <form asp-action="EstornarPagamento"
+                                                  asp-route-id="@item.Id"
+                                                  method="post"
+                                                  class="d-inline">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit"
+                                                        class="btn btn-warning btn-sm"
+                                                        onclick="return confirm('Deseja realmente estornar este pagamento?');">
+
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                    Estornar
+
+                                                </button>
+
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                -
+                                            </span>
+                                        }
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+
+        </div>
+    </div>
+
+</div>

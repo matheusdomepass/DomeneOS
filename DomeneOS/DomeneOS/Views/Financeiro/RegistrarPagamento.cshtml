@@ -1,0 +1,98 @@
+﻿@model DomeneOS.Models.LancamentoFinanceiro
+
+@{
+    ViewData["Title"] = "Registrar pagamento";
+}
+
+<div class="container mt-4">
+
+    <h2>Registrar pagamento</h2>
+
+    <p class="text-muted">
+        Confirme os dados do pagamento deste lançamento.
+    </p>
+
+    <hr />
+
+    <div class="card mb-4">
+        <div class="card-body">
+
+            <h5 class="card-title">
+                @Model.Descricao
+            </h5>
+
+            <p class="mb-1">
+                <strong>Valor:</strong>
+                @Model.Valor.ToString("C")
+            </p>
+
+            <p class="mb-1">
+                <strong>Tipo:</strong>
+                @Model.Tipo
+            </p>
+
+            @if (Model.OrdemServicoId.HasValue)
+            {
+                <p class="mb-0">
+                    <strong>Ordem de Serviço:</strong>
+                    #@Model.OrdemServicoId
+                </p>
+            }
+
+        </div>
+    </div>
+
+    <form asp-action="RegistrarPagamento" method="post">
+
+        <input type="hidden" name="id" value="@Model.Id" />
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">
+                    Forma de pagamento
+                </label>
+
+                <select name="formaPagamento"
+                        class="form-select"
+                        required>
+                    <option value="">Selecione...</option>
+                    <option value="1">Dinheiro</option>
+                    <option value="2">Pix</option>
+                    <option value="3">Cartão de crédito</option>
+                    <option value="4">Cartão de débito</option>
+                    <option value="5">Boleto</option>
+                    <option value="6">Transferência</option>
+                </select>
+
+                <span asp-validation-for="FormaPagamento"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">
+                    Data do pagamento
+                </label>
+
+                <input name="dataPagamento"
+                       type="datetime-local"
+                       class="form-control"
+                       value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
+                       required />
+            </div>
+
+        </div>
+
+        <button type="submit"
+                class="btn btn-success">
+            Confirmar pagamento
+        </button>
+
+        <a asp-action="Index"
+           class="btn btn-secondary">
+            Cancelar
+        </a>
+
+    </form>
+
+</div>

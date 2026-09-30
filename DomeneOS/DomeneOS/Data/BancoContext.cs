@@ -6,12 +6,13 @@ namespace DomeneOS.Data
 {
     public class BancoContext : IdentityDbContext<ApplicationUser>
     {
-        public  BancoContext(DbContextOptions<BancoContext> options) : base(options)
+        public BancoContext(DbContextOptions<BancoContext> options) : base(options)
         {
         }
-        public DbSet<Cliente> Clientes {  get; set; }
+        public DbSet<Cliente> Clientes { get; set; }
         public DbSet<OrdemServico> OrdensServico { get; set; }
         public DbSet<Produto> Produtos { get; set; }
+        public DbSet<LancamentoFinanceiro> LancamentosFinanceiros { get; set;}
 
         public DbSet<OrdemServicoProduto> OrdemServicoProdutos { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)

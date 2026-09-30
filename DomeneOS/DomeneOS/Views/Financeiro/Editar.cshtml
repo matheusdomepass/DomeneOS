@@ -1,0 +1,116 @@
+﻿@model DomeneOS.Models.LancamentoFinanceiro
+
+@{
+    ViewData["Title"] = "Editar lançamento";
+}
+
+<div class="container mt-4">
+
+    <h2>Editar lançamento</h2>
+
+    <p class="text-muted">
+        Altere os dados do lançamento financeiro.
+    </p>
+
+    <hr />
+
+    <form asp-action="Editar" method="post">
+
+        <input asp-for="Id" type="hidden" />
+
+        <div asp-validation-summary="ModelOnly"
+             class="text-danger"></div>
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="Descricao" class="form-label">
+                    Descrição
+                </label>
+
+                <input asp-for="Descricao"
+                       class="form-control" />
+
+                <span asp-validation-for="Descricao"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label asp-for="Tipo" class="form-label">
+                    Tipo
+                </label>
+
+                <select asp-for="Tipo"
+                        asp-items="Html.GetEnumSelectList<DomeneOS.Models.TipoLancamento>()"
+                        class="form-select">
+                </select>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <label asp-for="Valor" class="form-label">
+                    Valor
+                </label>
+
+                <input asp-for="Valor"
+                       class="form-control"
+                       type="text"
+                       inputmode="decimal"
+                       autocomplete="off" />
+
+                <span asp-validation-for="Valor"
+                      class="text-danger"></span>
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-4 mb-3">
+                <label asp-for="DataVencimento"
+                       class="form-label">
+                    Vencimento
+                </label>
+
+                <input asp-for="DataVencimento"
+                       type="date"
+                       class="form-control" />
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label asp-for="FormaPagamento"
+                       class="form-label">
+                    Forma de pagamento
+                </label>
+
+                <select asp-for="FormaPagamento"
+                        asp-items="Html.GetEnumSelectList<DomeneOS.Models.FormaPagamento>()"
+                        class="form-select">
+                </select>
+            </div>
+
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Observacao"
+                   class="form-label">
+                Observação
+            </label>
+
+            <textarea asp-for="Observacao"
+                      class="form-control"
+                      rows="3"></textarea>
+        </div>
+
+        <button type="submit"
+                class="btn btn-primary">
+            Salvar alterações
+        </button>
+
+        <a asp-action="Index"
+           class="btn btn-secondary">
+            Cancelar
+        </a>
+
+    </form>
+
+</div>

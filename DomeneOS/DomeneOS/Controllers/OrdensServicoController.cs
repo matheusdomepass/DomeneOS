@@ -15,10 +15,12 @@ namespace DomeneOS.Controllers
     public class OrdensServicoController : Controller
     {
         private readonly BancoContext _context;
+        private readonly IWebHostEnvironment _environment;
 
-        public OrdensServicoController(BancoContext context)
+        public OrdensServicoController(BancoContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
 
         public async Task<IActionResult> Index(StatusOrdemServico? status, string? pesquisa)
@@ -142,7 +144,10 @@ namespace DomeneOS.Controllers
 
             var valorDigitado = Request.Form["Valor"].ToString();
 
-            if (decimal.TryParse(valorDigitado, new CultureInfo("pt-BR"), out decimal valorConvertido))
+            if (decimal.TryParse(
+                valorDigitado,
+                new CultureInfo("pt-BR"),
+                out decimal valorConvertido))
             {
                 ordem.Valor = valorConvertido;
                 ModelState.Remove("Valor");
@@ -155,21 +160,16 @@ namespace DomeneOS.Controllers
 
             if (ModelState.IsValid)
             {
-                var ordemBanco = await _context.OrdensServico.FindAsync(id);
+                var ordemBanco = await _context.OrdensServico
+                    .Include(o => o.ProdutosUtilizados)
+                    .FirstOrDefaultAsync(o => o.Id == id);
 
                 if (ordemBanco == null)
                 {
                     return NotFound();
                 }
-
-                ordemBanco.ClienteId = ordem.ClienteId;
-                ordemBanco.DescricaoProblema = ordem.DescricaoProblema;
-                ordemBanco.Diagnostico = ordem.Diagnostico;
-                ordemBanco.Solucao = ordem.Solucao;
-                ordemBanco.Valor = ordem.Valor;
-                ordemBanco.Status = ordem.Status;
-
-                if (ordemBanco.Status == StatusOrdemServico.Finalizada || ordemBanco.Status == StatusOrdemServico.Cancelada)
+                if (ordemBanco.Status == StatusOrdemServico.Finalizada ||
+                    ordemBanco.Status == StatusOrdemServico.Cancelada)
                 {
                     TempData["Erro"] =
                         "Ordens finalizadas ou canceladas não podem ser editadas.";
@@ -178,30 +178,65 @@ namespace DomeneOS.Controllers
                         nameof(Detalhes),
                         new { id = ordemBanco.Id });
                 }
+                var statusAnterior = ordemBanco.Status;
 
-                if (ordemBanco == null)
-                {
-                    return NotFound();
-                }
+                ordemBanco.ClienteId = ordem.ClienteId;
+                ordemBanco.DescricaoProblema = ordem.DescricaoProblema;
+                ordemBanco.Diagnostico = ordem.Diagnostico;
+                ordemBanco.Solucao = ordem.Solucao;
+                ordemBanco.Valor = ordem.Valor;
+                ordemBanco.Status = ordem.Status;
 
-                if (ordem.Status == StatusOrdemServico.Finalizada && ordemBanco.DataFinalizacao == null)
+                if (ordem.Status == StatusOrdemServico.Finalizada &&
+                    statusAnterior != StatusOrdemServico.Finalizada)
                 {
                     ordemBanco.DataFinalizacao = DateTime.Now;
-                }
 
-                if (ordem.Status != StatusOrdemServico.Finalizada)
+                    var totalProdutos = ordemBanco.ProdutosUtilizados
+                        .Sum(p => p.Quantidade * p.PrecoUnitario);
+
+                    var valorTotal = ordemBanco.Valor + totalProdutos;
+
+                    var lancamentoExistente =
+                        await _context.LancamentosFinanceiros
+                            .AnyAsync(l => l.OrdemServicoId == ordemBanco.Id);
+
+                    if (!lancamentoExistente)
+                    {
+                        var lancamento = new LancamentoFinanceiro
+                        {
+                            Descricao = $"Ordem de Serviço #{ordemBanco.Id}",
+                            Tipo = TipoLancamento.Receita,
+                            Valor = valorTotal,
+                            DataLancamento = DateTime.Now,
+                            DataVencimento = DateTime.Today,
+                            Status = StatusLancamento.Pendente,
+                            FormaPagamento = FormaPagamento.NaoInformado,
+                            OrdemServicoId = ordemBanco.Id
+                        };
+
+                        _context.LancamentosFinanceiros.Add(lancamento);
+                    }
+                }
+                else
                 {
                     ordemBanco.DataFinalizacao = null;
                 }
 
                 await _context.SaveChangesAsync();
 
-                TempData["Sucesso"] = "Ordem de serviço atualizada com sucesso";
+                TempData["Sucesso"] =
+                    "Ordem de serviço atualizada com sucesso";
 
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Clientes = new SelectList(_context.Clientes, "Id", "Nome", ordem.ClienteId);
+            ViewBag.Clientes = new SelectList(
+                _context.Clientes,
+                "Id",
+                "Nome",
+                ordem.ClienteId);
+
             return View(ordem);
         }
 
@@ -246,6 +281,15 @@ namespace DomeneOS.Controllers
 
             var totalOrdem = ordem.Valor + totalProdutos;
 
+            var caminhoLogo = Path.Combine(_environment.WebRootPath,"images","logo Domenetech.png");
+
+            byte[]? logoBytes = null;
+
+            if (System.IO.File.Exists(caminhoLogo))
+            {
+                logoBytes = System.IO.File.ReadAllBytes(caminhoLogo);
+            }
+
             var pdf = Document.Create(container =>
             {
                 container.Page(page =>
@@ -253,10 +297,34 @@ namespace DomeneOS.Controllers
                     page.Margin(30);
                     page.Size(PageSizes.A4);
 
-                    page.Header()
-                        .Text("DomeneOS - Ordem de Serviço")
-                        .FontSize(20)
-                        .Bold();
+                    page.Header().PaddingBottom(15).Row(row => {
+                        if (logoBytes != null)
+                    {
+                        row.ConstantItem(70)
+                            .Height(70)
+                            .Image(logoBytes)
+                            .FitArea();
+                    }
+
+                    row.RelativeItem()
+                        .PaddingLeft(15)
+                        .AlignMiddle()
+                        .Column(column =>
+                        {
+                            column.Item()
+                                .Text("DomeneOS")
+                                .FontSize(20)
+                                .Bold();
+
+                            column.Item()
+                                .Text("Sistema de Gestão de Ordens de Serviço")
+                                .FontSize(10);
+
+                            column.Item()
+                                .Text("DomeneTech")
+                                .FontSize(9);
+                        });
+                }); ;
 
                     page.Content().Column(col =>
                     {
